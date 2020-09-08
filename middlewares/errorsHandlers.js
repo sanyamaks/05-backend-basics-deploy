@@ -1,25 +1,26 @@
-const {
-  BadRequestError, NotFoundError, ConflictError,
-} = require('./errors/errorStatusCodes');
+const { BadRequestError } = require('../errors/BadRequestError');
+const { NotFoundError } = require('../errors/NotFoundError');
+const { ConflictError } = require('../errors/ConflictError');
 
 module.exports = (err, req, res, next) => {
   const { message, name, errors } = err;
+  let hadledErr;
 
   if (name === 'DocumentNotFoundError') {
-    err = new NotFoundError('Запрашиваемый ресурс не найден');
-    return next(err);
+    hadledErr = new NotFoundError('Запрашиваемый ресурс не найден');
+    return next(hadledErr);
   }
   if (name === 'CastError') {
-    err = new BadRequestError('Невалидный id');
-    return next(err);
+    hadledErr = new BadRequestError('Невалидный id');
+    return next(hadledErr);
   }
   if (name === 'ValidationError' && errors.email && errors.email.kind === 'unique') {
-    err = new ConflictError('Пользователь с таким email уже существует');
-    return next(err);
+    hadledErr = new ConflictError('Пользователь с таким email уже существует');
+    return next(hadledErr);
   }
   if (name === 'ValidationError') {
-    err = new BadRequestError(message);
-    return next(err);
+    hadledErr = new BadRequestError(message);
+    return next(hadledErr);
   }
   return next(err);
 };

@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../models/user');
+const { BadRequestError } = require('../errors/BadRequestError');
 
-module.exports = (req, res) => {
+module.exports = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   if (!password) {
-    return res.status(400).send({ message: 'password: Это обязательное поле' });
+    throw new BadRequestError('password: Это обязательное поле');
   }
   return bcrypt.hash(password, 10)
     .then((hash) => UserModel.create({
@@ -20,13 +21,5 @@ module.exports = (req, res) => {
         email: user.email,
       },
     }))
-    .catch((err) => {
-      if (err.name === 'ValidationError' && err.errors.email && err.errors.email.kind === 'unique') {
-        return res.status(409).send({ message: 'Пользователь с таким email уже существует' });
-      }
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `${err.message}` });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
