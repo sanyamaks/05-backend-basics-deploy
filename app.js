@@ -4,16 +4,18 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { celebrate, errors } = require('celebrate');
-const apiCardsRouter = require('./routes/apiCardsRouter.js');
-const apiUsersRouter = require('./routes/apiUsersRouter.js');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const auth = require('./middlewares/auth.js');
 const login = require('./controllers/login.js');
 const createUser = require('./controllers/createUser.js');
-const auth = require('./middlewares/auth.js');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const apiCardsRouter = require('./routes/apiCardsRouter.js');
+const apiUsersRouter = require('./routes/apiUsersRouter.js');
 const errorsHandler = require('./middlewares/errorsHandlers.js');
 const errorsController = require('./middlewares/errorsController.js');
 const { createUserScheme, loginScheme, authScheme } = require('./utils/validationSchemes.js');
-const { requestLogger, errorLogger } = require('./middlewares/logger');
+const { requestLogger, errorLogger } = require('./middlewares/logger.js');
+const { NotFoundError } = require('./errors/NotFoundError.js');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -36,8 +38,8 @@ app.post('/signup', celebrate(createUserScheme), createUser);
 app.post('/signin', celebrate(loginScheme), login);
 app.use('/', celebrate(authScheme), auth, apiUsersRouter);
 app.use('/', celebrate(authScheme), auth, apiCardsRouter);
-app.use((req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+app.use(() => {
+  throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
 app.use(errorLogger);
