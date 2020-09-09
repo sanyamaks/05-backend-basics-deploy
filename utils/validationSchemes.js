@@ -1,10 +1,11 @@
 const { Joi } = require('celebrate');
+const urlValidator = require('./urlValidator.js');
 
 module.exports.createUserScheme = {
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().required().pattern(/https?:\/\/(www\.)?([1-2]?\d?\d(\.[1-2]?\d?\d){3}|([a-z\d]+(-[a-z\d]+)*\.)+[a-z][a-z]+)(:\d{2,5})?(\/[A-Za-z1-9]+)*((\/)|#)?/),
+    avatar: Joi.string().required().custom(urlValidator, 'urlValidator'),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -25,7 +26,7 @@ module.exports.authScheme = {
 
 module.exports.getUserScheme = {
   params: Joi.object().keys({
-    id: Joi.string().alphanum().length(24),
+    id: Joi.shex().length(24),
   }),
 };
 
@@ -38,37 +39,37 @@ module.exports.updateUserScheme = {
 
 module.exports.updateUserAvatarScheme = {
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/https?:\/\/(www\.)?([1-2]?\d?\d(\.[1-2]?\d?\d){3}|([a-z\d]+(-[a-z\d]+)*\.)+[a-z][a-z]+)(:\d{2,5})?(\/[A-Za-z1-9]+)*(\.jpg)?((\/)|#)?/),
+    avatar: Joi.string().required().custom(urlValidator, 'urlValidator'),
   }),
 };
 
 module.exports.getCardScheme = {
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 };
 
 module.exports.createCardScheme = {
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().pattern(/https?:\/\/(www\.)?([1-2]?\d?\d(\.[1-2]?\d?\d){3}|([a-z\d]+(-[a-z\d]+)*\.)+[a-z][a-z]+)(:\d{2,5})?(\/[A-Za-z1-9]+)*((\/)|#)?/),
+    link: Joi.string().required().custom(urlValidator, 'urlValidator'),
   }),
 };
 
 module.exports.removeCardScheme = {
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 };
 
 module.exports.addLikeScheme = {
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 };
 
 module.exports.removeLikeScheme = {
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 };
