@@ -26,7 +26,7 @@ module.exports.authScheme = {
 
 module.exports.getUserScheme = {
   params: Joi.object().keys({
-    id: Joi.shex().length(24),
+    id: Joi.string().hex().length(24),
   }),
 };
 
