@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { celebrate, errors } = require('celebrate');
+const cors = require('cors');
 const apiCardsRouter = require('./routes/apiCardsRouter.js');
 const apiUsersRouter = require('./routes/apiUsersRouter.js');
 const login = require('./controllers/login.js');
@@ -24,9 +25,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 app.use(bodyParser.json());
 app.use(helmet());
-app.use((req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-});
+
+app.use(cors());
+
 app.use(requestLogger);
 app.get('/crash-test', () => {
   setTimeout(() => {
