@@ -1,47 +1,34 @@
 const CardModel = require('../models/card');
+const { ForbiddenError } = require('../errors/ForbiddenError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   CardModel.find({}).populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
-    .catch(() => req.status(500).send({ message: 'Internal Server Error' }));
+    .catch(next);
 };
 
-module.exports.getCard = (req, res) => {
+module.exports.getCard = (req, res, next) => {
   const { cardId } = req.params;
 
   CardModel.findById(cardId).populate(['owner', 'likes']).orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Невалидный id' });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   CardModel.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `${err.message}` });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.removeCard = (req, res) => {
+module.exports.removeCard = (req, res, next) => {
   const { cardId } = req.params;
-
   CardModel.findById(cardId).populate(['owner', 'likes']).orFail()
     .then((probableCard) => {
       if (probableCard.owner._id.toString() !== req.user._id) {
-        return res.status(403).send({ message: 'Карточку может удалить только создатель' });
+        throw new ForbiddenError('Карточку может удалить только создатель');
       }
       return CardModel.findByIdAndRemove(cardId)
         .orFail()
@@ -49,49 +36,25 @@ module.exports.removeCard = (req, res) => {
           res.send({ data: card });
         });
     })
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Невалидный id' });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.addLike = (req, res) => {
+module.exports.addLike = (req, res, next) => {
   CardModel.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   ).populate(['owner', 'likes']).orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Невалидный id' });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.removeLike = (req, res) => {
+module.exports.removeLike = (req, res, next) => {
   CardModel.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   ).populate(['owner', 'likes']).orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Невалидный id' });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };

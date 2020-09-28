@@ -3,12 +3,19 @@ const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const apiCardsRouter = require('./routes/apiCardsRouter.js');
-const apiUsersRouter = require('./routes/apiUsersRouter.js');
+const { celebrate, errors } = require('celebrate');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const auth = require('./middlewares/auth.js');
 const login = require('./controllers/login.js');
 const createUser = require('./controllers/createUser.js');
-const auth = require('./middlewares/auth.js');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const apiCardsRouter = require('./routes/apiCardsRouter.js');
+const apiUsersRouter = require('./routes/apiUsersRouter.js');
+const errorsHandler = require('./middlewares/errorsHandlers.js');
+const errorsController = require('./middlewares/errorsController.js');
+const { createUserScheme, loginScheme, authScheme } = require('./utils/validationSchemes.js');
+const { requestLogger, errorLogger } = require('./middlewares/logger.js');
+const { NotFoundError } = require('./errors/NotFoundError.js');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -21,13 +28,25 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(bodyParser.json());
 app.use(helmet());
 
-app.post('/signup', createUser);
-app.post('/signin', login);
-app.use('/', auth, apiUsersRouter);
-app.use('/', auth, apiCardsRouter);
-app.use((req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+app.use(requestLogger);
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадет!');
+  }, 0);
 });
+app.post('/signup', celebrate(createUserScheme), createUser);
+app.post('/signin', celebrate(loginScheme), login);
+app.use('/', celebrate(authScheme), auth, apiUsersRouter);
+app.use('/', celebrate(authScheme), auth, apiCardsRouter);
+app.use(() => {
+  throw new NotFoundError('Запрашиваемый ресурс не найден');
+});
+
+app.use(errorLogger);
+app.use(errors());
+
+app.use(errorsHandler);
+app.use(errorsController);
 
 app.listen(PORT, () => {
   console.log('Сервер запущен на порту:');

@@ -1,28 +1,20 @@
 const UserModel = require('../models/user.js');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   UserModel.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Internal Server Error' }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   const { id } = req.params;
 
   UserModel.findById(id).orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Нет пользователя с таким id' });
-      }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Невалидный id' });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   UserModel.findByIdAndUpdate(req.user._id, { name, about }, {
@@ -31,15 +23,10 @@ module.exports.updateUser = (req, res) => {
     upsert: false,
   }).orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `${err.message}` });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   UserModel.findByIdAndUpdate(req.user._id, { avatar }, {
@@ -48,10 +35,5 @@ module.exports.updateUserAvatar = (req, res) => {
     upsert: false,
   }).orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `${err.message}` });
-      }
-      return res.status(500).send({ message: 'Internal Server Error' });
-    });
+    .catch(next);
 };
