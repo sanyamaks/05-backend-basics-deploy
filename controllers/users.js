@@ -14,9 +14,14 @@ module.exports.getUser = (req, res, next) => {
     .catch(next);
 };
 
+module.exports.getUserMe = (req, res, next) => {
+  UserModel.findById(req.user._id).orFail()
+    .then((user) => res.send({ data: user }))
+    .catch(next);
+};
+
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
-
   UserModel.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true,
     runValidators: true,

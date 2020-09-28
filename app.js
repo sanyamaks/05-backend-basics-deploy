@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { celebrate, errors } = require('celebrate');
+const cors = require('cors');
+
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const auth = require('./middlewares/auth.js');
@@ -19,7 +21,6 @@ const { NotFoundError } = require('./errors/NotFoundError.js');
 
 const { PORT = 3000 } = process.env;
 const app = express();
-
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -27,6 +28,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 app.use(bodyParser.json());
 app.use(helmet());
+
+app.use(cors());
 
 app.use(requestLogger);
 app.get('/crash-test', () => {
