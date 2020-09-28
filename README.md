@@ -1,9 +1,9 @@
 # Основы бэкенда. (Яндекс.Практикум. Проектная работа №15)
 Версия 0.0.1
 
-#### Публичный IP - [http://84.201.128.19/](http://84.201.128.19/)
-#### Backend - [api.aleksmaksimov.tk](https://www.api.aleksmaksimov.tk/)
-#### Frontend - [aleksmaksimov.tk](https://www.aleksmaksimov.tk/)
+#### Публичный IP - [http://84.201.128.19/ - временно не доступен](http://84.201.128.19/)
+#### Backend - [api.aleksmaksimov.tk - временно не доступен](https://www.api.aleksmaksimov.tk/)
+#### Frontend - [aleksmaksimov.tk - временно не доступен](https://www.aleksmaksimov.tk/)
 
 ## О проекте:
 Учебный проект для создания бэкенда на express для проекта Mesto.
